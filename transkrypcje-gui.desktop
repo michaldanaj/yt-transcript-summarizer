@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Transkrypcje YouTube
+Comment=Pobieranie i streszczanie transkrypcji filmów YouTube
+Exec=/home/michal/.local/bin/transkrypcje-gui
+Icon=accessories-text-editor
+Terminal=false
+Categories=Utility;AudioVideo;
+Keywords=youtube;transkrypcja;streszczenie;gemini;
