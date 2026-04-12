@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 from PyQt6.QtCore import QSettings, Qt
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -33,6 +34,9 @@ class MainWindow(QWidget):
         except importlib.metadata.PackageNotFoundError:
             version = "dev"
         self.setWindowTitle(f"Transkrypcje YouTube v{version}")
+        icon_path = Path.home() / ".local/share/icons/transkrypcje-gui.svg"
+        if icon_path.exists():
+            self.setWindowIcon(QIcon(str(icon_path)))
         self.setMinimumSize(900, 600)
 
         self.settings = QSettings("Transkrypcje", "TranskrypcjeYT")
