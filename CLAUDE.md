@@ -44,6 +44,13 @@ wprowadzeniu. Nie czekaj na koniec sesji. Zasady:
 - `google-genai` — Gemini API
 - `PyQt6` — GUI
 
+## Wersjonowanie
+
+Przy każdej zmianie kodu należy podbić wersję w `pyproject.toml`:
+
+- patch (0.x.**Y**) — poprawki błędów, drobne zmiany
+- minor (0.**X**.0) — nowe funkcje
+
 ## Zasady pracy z kodem
 
 - Logika core (`transcript.py`, `summarizer.py`) nie importuje Qt.

@@ -253,6 +253,7 @@ class MainWindow(QWidget):
 def main() -> None:
     app = QApplication(sys.argv)
     app.setApplicationName("Transkrypcje YouTube")
+    app.setDesktopFileName("transkrypcje-gui")
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
