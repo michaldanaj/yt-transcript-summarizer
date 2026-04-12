@@ -30,7 +30,7 @@ transkrypcje-gui
 Aktualizacja po zmianach w kodzie:
 
 ```bash
-uv tool install . --force
+uv tool install --reinstall .
 ```
 
 Odinstalowanie:
