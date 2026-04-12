@@ -186,7 +186,7 @@ class MainWindow(QWidget):
 
         # Teraz generuj streszczenie
         api_key = self.key_input.text().strip()
-        self._worker = SummaryWorker(text, api_key)
+        self._worker = SummaryWorker(text, api_key, self.meta)
         self._worker.status.connect(self._on_status)
         self._worker.finished.connect(self._on_summary_done)
         self._worker.error.connect(self._on_error)

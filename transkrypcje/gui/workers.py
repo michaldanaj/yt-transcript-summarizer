@@ -34,7 +34,7 @@ class TranscriptWorker(QThread):
             self.status.emit(f"Pobieram transkrypcję: {meta.title}...")
             snippets, _, _ = fetch_transcript(video_id, self.lang)
 
-            text = format_transcript(snippets, meta.chapters)
+            text = format_transcript(snippets, meta)
             self.finished.emit(text, meta)
         except Exception as e:
             self.error.emit(str(e))
@@ -47,15 +47,18 @@ class SummaryWorker(QThread):
     error = pyqtSignal(str)
     status = pyqtSignal(str)
 
-    def __init__(self, transcript: str, api_key: str) -> None:
+    def __init__(
+        self, transcript: str, api_key: str, meta: VideoMeta | None = None
+    ) -> None:
         super().__init__()
         self.transcript = transcript
         self.api_key = api_key
+        self.meta = meta
 
     def run(self) -> None:
         try:
             self.status.emit("Generuję streszczenie (Gemini)...")
-            result = summarize(self.transcript, self.api_key)
+            result = summarize(self.transcript, self.api_key, self.meta)
             self.finished.emit(result)
         except Exception as e:
             self.error.emit(str(e))
