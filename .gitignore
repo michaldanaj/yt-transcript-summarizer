@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.venv
+
+# IDE
+.idea/
+.vscode/
+
+# Wygenerowane pliki
+*.md.bak
+pod.md
+pod2.md
+glm.md

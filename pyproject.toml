@@ -1,0 +1,21 @@
+[project]
+name = "transkrypcje"
+version = "0.1.0"
+description = "Pobieranie i streszczanie transkrypcji filmów YouTube"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "google-genai>=1.72.0",
+    "pyqt6>=6.11.0",
+    "youtube-transcript-api>=1.2.4",
+    "yt-dlp>=2026.3.17",
+]
+
+[project.scripts]
+transkrypcja = "transkrypcje.transcript:main"
+streszczenie = "transkrypcje.summarizer:main"
+transkrypcje-gui = "transkrypcje.gui.app:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
