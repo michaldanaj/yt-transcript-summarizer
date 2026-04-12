@@ -132,7 +132,7 @@ def main() -> None:
     lang = sys.argv[2] if len(sys.argv) > 2 else None
 
     print("Pobieram transkrypcję...", file=sys.stderr)
-    transcript = get_full_transcript(url, lang)
+    transcript, _ = get_full_transcript(url, lang)
 
     print("Generuję streszczenie...", file=sys.stderr)
     print(summarize(transcript, api_key))

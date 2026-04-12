@@ -23,13 +23,37 @@ def format_timestamp(seconds: float) -> str:
     return f"{m:02d}:{s:02d}"
 
 
-def fetch_chapters(video_id: str) -> list[dict]:
-    """Pobiera rozdziały filmu z YouTube przez yt-dlp."""
+class VideoMeta:
+    """Metadane filmu YouTube."""
+
+    def __init__(self, title: str, channel: str, chapters: list[dict]):
+        self.title = title
+        self.channel = channel
+        self.chapters = chapters
+
+    def safe_filename(self, suffix: str = "") -> str:
+        """Zwraca bezpieczną nazwę pliku: tytuł - kanał[suffix]."""
+        name = f"{self.title} - {self.channel}"
+        # Usuń znaki niedozwolone w nazwach plików
+        for ch in r'<>:"/\|?*':
+            name = name.replace(ch, "")
+        name = name.strip(". ")
+        if suffix:
+            name = f"{name}{suffix}"
+        return name
+
+
+def fetch_meta(video_id: str) -> VideoMeta:
+    """Pobiera metadane filmu (tytuł, kanał, rozdziały) przez yt-dlp."""
     url = f"https://www.youtube.com/watch?v={video_id}"
     ydl_opts = {"skip_download": True, "quiet": True}
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=False)
-        return info.get("chapters") or []
+        return VideoMeta(
+            title=info.get("title", video_id),
+            channel=info.get("channel", info.get("uploader", "unknown")),
+            chapters=info.get("chapters") or [],
+        )
 
 
 def fetch_transcript(video_id: str, lang: str | None = None) -> tuple[list, str, str]:
@@ -106,12 +130,15 @@ def format_transcript(
     return "\n".join(lines)
 
 
-def get_full_transcript(url: str, lang: str | None = None) -> str:
-    """Pobiera i formatuje pełną transkrypcję (z rozdziałami) dla URL-a."""
+def get_full_transcript(url: str, lang: str | None = None) -> tuple[str, VideoMeta]:
+    """Pobiera i formatuje pełną transkrypcję (z rozdziałami) dla URL-a.
+
+    Zwraca (sformatowana_transkrypcja, metadane_filmu).
+    """
     video_id = extract_video_id(url)
-    chapters = fetch_chapters(video_id)
+    meta = fetch_meta(video_id)
     snippets, _, _ = fetch_transcript(video_id, lang)
-    return format_transcript(snippets, chapters)
+    return format_transcript(snippets, meta.chapters), meta
 
 
 def main() -> None:
@@ -127,7 +154,7 @@ def main() -> None:
 
     print(f"Pobieram transkrypcję dla filmu: {video_id}", file=sys.stderr)
 
-    chapters = fetch_chapters(video_id)
+    meta = fetch_meta(video_id)
     snippets, lang_name, lang_code = fetch_transcript(video_id, lang)
 
     langs = available_languages(video_id)
@@ -137,7 +164,7 @@ def main() -> None:
     )
     print(f"Wybrana transkrypcja: {lang_name} ({lang_code})", file=sys.stderr)
 
-    print(format_transcript(snippets, chapters))
+    print(format_transcript(snippets, meta.chapters))
 
 
 if __name__ == "__main__":
