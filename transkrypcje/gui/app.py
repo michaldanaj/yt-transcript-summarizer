@@ -1,5 +1,6 @@
 """Główne okno aplikacji Transkrypcje YouTube."""
 
+import importlib.metadata
 import os
 import subprocess
 import sys
@@ -27,7 +28,11 @@ from .workers import SummaryWorker, TranscriptWorker
 class MainWindow(QWidget):
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle("Transkrypcje YouTube")
+        try:
+            version = importlib.metadata.version("transkrypcje")
+        except importlib.metadata.PackageNotFoundError:
+            version = "dev"
+        self.setWindowTitle(f"Transkrypcje YouTube v{version}")
         self.setMinimumSize(900, 600)
 
         self.settings = QSettings("Transkrypcje", "TranskrypcjeYT")
