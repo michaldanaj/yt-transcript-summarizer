@@ -27,8 +27,15 @@ transkrypcje/
     └── app.py         # aplikacja Qt
 ```
 
-Stare pliki `main.py` i `summarize.py` w korzeniu są przestarzałe —
-logika przeniesiona do pakietu `transkrypcje/`.
+## Git
+
+Każda logicznie spójna zmiana powinna być commitowana od razu po jej
+wprowadzeniu. Nie czekaj na koniec sesji. Zasady:
+
+- Commituj po każdej zakończonej zmianie (nowa funkcja, poprawka, refaktor).
+- Jedno commit = jedna zmiana logiczna; nie mieszaj niezwiązanych rzeczy.
+- Komunikat po polsku, zwięzły, opisuje *co i dlaczego* (nie *jak*).
+- Zawsze dodawaj `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`.
 
 ## Zależności zewnętrzne
 
