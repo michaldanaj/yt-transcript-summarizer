@@ -50,6 +50,7 @@ class MainWindow(QWidget):
             "https://www.youtube.com/watch?v=..."
         )
         self.url_input.returnPressed.connect(self._on_start)
+        self.url_input.textChanged.connect(self._on_url_changed)
         url_row.addWidget(self.url_input, 1)
         self.start_btn = QPushButton("Pobierz i streść")
         self.start_btn.clicked.connect(self._on_start)
@@ -171,6 +172,11 @@ class MainWindow(QWidget):
         self._worker.finished.connect(self._on_transcript_done)
         self._worker.error.connect(self._on_error)
         self._worker.start()
+
+    def _on_url_changed(self, text: str) -> None:
+        text = text.strip()
+        if ("youtube.com/watch?v=" in text or "youtu.be/" in text) and self.start_btn.isEnabled():
+            self._on_start()
 
     def _on_status(self, msg: str) -> None:
         self.status_label.setText(msg)
