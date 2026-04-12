@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Tło -->
+  <rect width="128" height="128" rx="22" fill="#1a1a2e"/>
+
+  <!-- Ekran / monitor -->
+  <rect x="12" y="16" width="104" height="68" rx="8" fill="#16213e"/>
+  <rect x="12" y="16" width="104" height="68" rx="8" fill="none" stroke="#e94560" stroke-width="3"/>
+
+  <!-- Trójkąt play -->
+  <polygon points="46,32 46,68 82,50" fill="#e94560"/>
+
+  <!-- Linie transkrypcji -->
+  <rect x="12" y="94" width="65" height="6" rx="3" fill="#e94560" opacity="0.9"/>
+  <rect x="12" y="106" width="104" height="5" rx="2.5" fill="#ffffff" opacity="0.5"/>
+  <rect x="12" y="117" width="80" height="5" rx="2.5" fill="#ffffff" opacity="0.5"/>
+</svg>
