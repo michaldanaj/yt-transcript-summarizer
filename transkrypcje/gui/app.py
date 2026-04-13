@@ -123,6 +123,9 @@ class MainWindow(QWidget):
         status_row.addWidget(self.save_manual_btn)
         self.status_label = QLabel("Gotowe")
         status_row.addWidget(self.status_label, 1)
+        self.transcript_stats_label = QLabel("")
+        self.transcript_stats_label.setAlignment(Qt.AlignmentFlag.AlignRight)
+        status_row.addWidget(self.transcript_stats_label)
         self.progress = QProgressBar()
         self.progress.setMaximumWidth(200)
         self.progress.setRange(0, 0)  # indeterminate
@@ -278,6 +281,7 @@ class MainWindow(QWidget):
         self.summary_view.setPlaceholderText("")
         self.copy_prompt_btn.hide()
         self.save_manual_btn.hide()
+        self.transcript_stats_label.setText("")
         self.meta = None
         self.transcript_text = ""
         self.summary_text = ""
@@ -302,6 +306,12 @@ class MainWindow(QWidget):
         self.transcript_text = text
         self.transcript_view.setPlainText(text)
         self.tabs.setCurrentIndex(0)
+
+        words = len(text.split())
+        lines = text.count("\n") + 1 if text else 0
+        self.transcript_stats_label.setText(
+            f"transkrypcja: {words} słów, {lines} linii"
+        )
 
         # Zapisz transkrypcję
         self._save_transcript()
