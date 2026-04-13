@@ -24,7 +24,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from ..summarizer import Provider, postprocess_summary
+from ..summarizer import PROMPT, Provider, postprocess_summary
 from .workers import SummaryWorker, TranscriptWorker
 
 
@@ -111,11 +111,17 @@ class MainWindow(QWidget):
 
         layout.addWidget(self.tabs, 1)
 
-        # --- Przycisk zapisu ręcznego streszczenia ---
+        # --- Przyciski trybu ręcznego ---
+        self.manual_row = QHBoxLayout()
+        self.copy_prompt_btn = QPushButton("Kopiuj prompt")
+        self.copy_prompt_btn.clicked.connect(self._on_copy_prompt)
+        self.copy_prompt_btn.hide()
+        self.manual_row.addWidget(self.copy_prompt_btn)
         self.save_manual_btn = QPushButton("Zapisz streszczenie")
         self.save_manual_btn.clicked.connect(self._on_save_manual)
         self.save_manual_btn.hide()
-        layout.addWidget(self.save_manual_btn)
+        self.manual_row.addWidget(self.save_manual_btn)
+        layout.addLayout(self.manual_row)
 
         # --- Status bar ---
         status_row = QHBoxLayout()
@@ -254,6 +260,7 @@ class MainWindow(QWidget):
         self.summary_view.clear()
         self.summary_view.setReadOnly(True)
         self.summary_view.setPlaceholderText("")
+        self.copy_prompt_btn.hide()
         self.save_manual_btn.hide()
         self.meta = None
         self.transcript_text = ""
@@ -292,11 +299,12 @@ class MainWindow(QWidget):
             self.summary_view.setPlaceholderText(
                 "Wklej tutaj streszczenie w Markdown..."
             )
+            self.copy_prompt_btn.show()
             self.save_manual_btn.show()
             self.tabs.setCurrentIndex(1)
             self.summary_view.setFocus()
             self.status_label.setText(
-                "Transkrypcja pobrana — wklej streszczenie"
+                "Transkrypcja pobrana — skopiuj prompt lub wklej streszczenie"
             )
         else:
             # Tryb automatyczny — generuj streszczenie przez LLM
@@ -313,6 +321,7 @@ class MainWindow(QWidget):
         self.summary_text = summary
         self.summary_view.setReadOnly(True)
         self.summary_view.setMarkdown(summary)
+        self.copy_prompt_btn.hide()
         self.save_manual_btn.hide()
         self.tabs.setCurrentIndex(1)
         self._set_busy(False)
@@ -323,6 +332,12 @@ class MainWindow(QWidget):
             self._open_in_typora(summary_path)
 
         self.status_label.setText("Gotowe — pliki zapisane")
+
+    def _on_copy_prompt(self) -> None:
+        """Kopiuj prompt z transkrypcją do schowka."""
+        text = PROMPT.format(transcript=self.transcript_text)
+        QApplication.clipboard().setText(text)
+        self.status_label.setText("Prompt skopiowany do schowka")
 
     def _on_save_manual(self) -> None:
         """Zapisz ręcznie wklejone streszczenie z postprocessingiem."""
