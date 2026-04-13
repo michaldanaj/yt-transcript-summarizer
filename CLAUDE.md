@@ -27,6 +27,14 @@ transkrypcje/
     └── app.py         # aplikacja Qt
 ```
 
+## Podręcznik
+
+Po każdej zmianie bądź uszczegółowieniu założeń, należy zaktualizować podręcznik w pliku README.md, chyba że zmiana była na tyle techniczna że nie jest widoczna dla użytkownika.
+
+## Specyfikacja
+
+Po każdej zmianie bądź uszczegółowieniu założeń, należy zaktualizować specyfikację w pliku SPEC.md.
+
 ## Git
 
 Każda logicznie spójna zmiana powinna być commitowana od razu po jej
