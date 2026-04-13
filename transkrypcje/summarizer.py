@@ -33,6 +33,11 @@ Wzory matematyczne zapisuj w notacji LaTeX: `$...$` dla wzorów w tekście \
 Pisz zwięźle, ale nie pomijaj istotnych informacji. Zachowaj timestampy \
 przy kluczowych momentach.
 
+Cały wynik umieść w ramce kodu z oznaczeniem języka markdown, czyli:
+```markdown
+(tutaj streszczenie)
+```
+
 TRANSKRYPCJA:
 {transcript}
 """
@@ -134,9 +139,20 @@ def _summarize_claude(transcript: str, api_key: str) -> str:
     return message.content[0].text
 
 
+def _strip_code_fence(text: str) -> str:
+    """Usuwa owijającą ramkę ```markdown ... ``` jeśli LLM ją dodał."""
+    stripped = text.strip()
+    if stripped.startswith("```"):
+        first_newline = stripped.index("\n") if "\n" in stripped else len(stripped)
+        stripped = stripped[first_newline:].strip()
+        if stripped.endswith("```"):
+            stripped = stripped[:-3].strip()
+    return stripped
+
+
 def postprocess_summary(raw: str, meta: VideoMeta | None = None) -> str:
     """Formatuje surowe streszczenie: wrap + timestampy + nagłówek."""
-    text = wrap_markdown(raw)
+    text = wrap_markdown(_strip_code_fence(raw))
     if meta:
         text = linkify_timestamps(text, meta.video_id)
         text = meta.format_header() + "\n\n" + text
