@@ -37,16 +37,17 @@ Jedno okno (`MainWindow`) z pionowym układem elementów.
 **Zakładka Transkrypcja**
 
 - `QTextEdit` (read-only, monospace) z pełną transkrypcją:
+  - nagłówek z metadanymi (tytuł, kanał, data publikacji, URL)
   - spis treści rozdziałów (jeśli film je posiada)
   - tekst z timestampami i nagłówkami rozdziałów
-- Transkrypcja zapisywana automatycznie jako `<tytuł>_transcript.txt`
+- Transkrypcja zapisywana automatycznie jako `<tytuł> - <kanał>_transcript.txt`
 
 **Zakładka Streszczenie**
 
 - `QTextEdit` ze streszczeniem (renderowany Markdown)
 - W trybie ręcznym — edytowalny, z placeholderem
   „Wklej tutaj streszczenie w Markdown…"
-- Streszczenie zapisywane automatycznie jako `<tytuł>.md`
+- Streszczenie zapisywane automatycznie jako `<tytuł> - <kanał>.md`
 
 ### Przyciski trybu ręcznego
 
