@@ -3,7 +3,7 @@
 ## Projekt
 
 Aplikacja do pobierania transkrypcji filmów YouTube i generowania streszczeń
-w Markdown przy pomocy Gemini LLM. Docelowo posiada GUI w PyQt6.
+w Markdown przy pomocy LLM (Gemini / Claude). Posiada GUI w PyQt6.
 
 ## Środowisko
 
@@ -15,14 +15,14 @@ uv run streszczenie <URL>          # wygeneruj streszczenie
 uv run transkrypcje-gui            # uruchom GUI
 ```
 
-Klucz API Gemini: zmienna środowiskowa `GEMINI_API_KEY`.
+Klucze API: `GEMINI_API_KEY` (Gemini), `ANTHROPIC_API_KEY` (Claude).
 
 ## Struktura pakietu
 
 ```
 transkrypcje/
 ├── transcript.py      # logika pobierania transkrypcji i rozdziałów
-├── summarizer.py      # logika streszczania (Gemini) + wrap_markdown
+├── summarizer.py      # logika streszczania (Gemini/Claude) + wrap_markdown
 └── gui/
     └── app.py         # aplikacja Qt
 ```
@@ -42,6 +42,7 @@ wprowadzeniu. Nie czekaj na koniec sesji. Zasady:
 - `youtube-transcript-api` — transkrypcje
 - `yt-dlp` — metadane (rozdziały, tytuł)
 - `google-genai` — Gemini API
+- `anthropic` — Claude API
 - `PyQt6` — GUI
 
 ## Wersjonowanie

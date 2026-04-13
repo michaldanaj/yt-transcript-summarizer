@@ -9,7 +9,7 @@ from ..transcript import (
     fetch_transcript,
     format_transcript,
 )
-from ..summarizer import summarize
+from ..summarizer import Provider, summarize
 
 
 class TranscriptWorker(QThread):
@@ -48,17 +48,25 @@ class SummaryWorker(QThread):
     status = pyqtSignal(str)
 
     def __init__(
-        self, transcript: str, api_key: str, meta: VideoMeta | None = None
+        self,
+        transcript: str,
+        api_key: str,
+        meta: VideoMeta | None = None,
+        provider: Provider = Provider.GEMINI,
     ) -> None:
         super().__init__()
         self.transcript = transcript
         self.api_key = api_key
         self.meta = meta
+        self.provider = provider
 
     def run(self) -> None:
         try:
-            self.status.emit("Generuję streszczenie (Gemini)...")
-            result = summarize(self.transcript, self.api_key, self.meta)
+            label = "Claude" if self.provider == Provider.CLAUDE else "Gemini"
+            self.status.emit(f"Generuję streszczenie ({label})...")
+            result = summarize(
+                self.transcript, self.api_key, self.meta, self.provider
+            )
             self.finished.emit(result)
         except Exception as e:
             self.error.emit(str(e))

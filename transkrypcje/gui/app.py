@@ -10,6 +10,7 @@ from PyQt6.QtCore import QSettings, Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QApplication,
+    QComboBox,
     QFileDialog,
     QHBoxLayout,
     QLabel,
@@ -23,6 +24,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from ..summarizer import Provider
 from .workers import SummaryWorker, TranscriptWorker
 
 
@@ -77,12 +79,21 @@ class MainWindow(QWidget):
         dir_row.addWidget(dir_btn)
         layout.addLayout(dir_row)
 
-        # --- API key ---
+        # --- Provider + API key ---
         key_row = QHBoxLayout()
-        key_row.addWidget(QLabel("Gemini API Key:"))
+        key_row.addWidget(QLabel("Model:"))
+        self.provider_combo = QComboBox()
+        self.provider_combo.addItem("Gemini", Provider.GEMINI)
+        self.provider_combo.addItem("Claude", Provider.CLAUDE)
+        self.provider_combo.currentIndexChanged.connect(
+            self._on_provider_changed
+        )
+        key_row.addWidget(self.provider_combo)
+
+        self.key_label = QLabel("API Key:")
+        key_row.addWidget(self.key_label)
         self.key_input = QLineEdit()
         self.key_input.setEchoMode(QLineEdit.EchoMode.Password)
-        self.key_input.setPlaceholderText("Klucz API Gemini")
         key_row.addWidget(self.key_input, 1)
         layout.addLayout(key_row)
 
@@ -116,22 +127,71 @@ class MainWindow(QWidget):
         )
         self.dir_input.setText(output_dir)
 
-        api_key = self.settings.value("api_key", "")
-        if not api_key:
-            api_key = (
+        # Provider
+        provider_name = self.settings.value("provider", "gemini")
+        idx = self.provider_combo.findData(Provider(provider_name))
+        if idx >= 0:
+            self.provider_combo.setCurrentIndex(idx)
+
+        # Klucze API (osobne dla każdego providera)
+        gemini_key = self.settings.value("api_key_gemini", "")
+        if not gemini_key:
+            gemini_key = (
                 os.environ.get("GEMINI_API_KEY")
                 or os.environ.get("GOOGLE_API_KEY")
                 or ""
             )
-        self.key_input.setText(api_key)
+        claude_key = self.settings.value("api_key_claude", "")
+        if not claude_key:
+            claude_key = os.environ.get("ANTHROPIC_API_KEY") or ""
+
+        self._api_keys = {
+            Provider.GEMINI: gemini_key,
+            Provider.CLAUDE: claude_key,
+        }
+        self._on_provider_changed()
 
         geometry = self.settings.value("geometry")
         if geometry:
             self.restoreGeometry(geometry)
 
+    def _current_provider(self) -> Provider:
+        return self.provider_combo.currentData()
+
+    def _on_provider_changed(self) -> None:
+        # Zapisz bieżący klucz do słownika
+        if hasattr(self, "_last_provider"):
+            self._api_keys[self._last_provider] = (
+                self.key_input.text().strip()
+            )
+
+        provider = self._current_provider()
+        self._last_provider = provider
+
+        if provider == Provider.CLAUDE:
+            self.key_label.setText("Anthropic API Key:")
+            self.key_input.setPlaceholderText("Klucz API Claude")
+        else:
+            self.key_label.setText("Gemini API Key:")
+            self.key_input.setPlaceholderText("Klucz API Gemini")
+
+        self.key_input.setText(self._api_keys.get(provider, ""))
+
     def _save_settings(self) -> None:
         self.settings.setValue("output_dir", self.dir_input.text())
-        self.settings.setValue("api_key", self.key_input.text())
+        self.settings.setValue(
+            "provider", self._current_provider().value
+        )
+        # Upewnij się, że bieżący klucz jest zapisany
+        self._api_keys[self._current_provider()] = (
+            self.key_input.text().strip()
+        )
+        self.settings.setValue(
+            "api_key_gemini", self._api_keys.get(Provider.GEMINI, "")
+        )
+        self.settings.setValue(
+            "api_key_claude", self._api_keys.get(Provider.CLAUDE, "")
+        )
         self.settings.setValue("geometry", self.saveGeometry())
 
     def closeEvent(self, event) -> None:
@@ -160,11 +220,13 @@ class MainWindow(QWidget):
             return
 
         api_key = self.key_input.text().strip()
+        provider = self._current_provider()
+        provider_label = "Anthropic" if provider == Provider.CLAUDE else "Gemini"
         if not api_key:
             QMessageBox.warning(
                 self,
                 "Brak klucza API",
-                "Podaj klucz Gemini API Key.",
+                f"Podaj klucz {provider_label} API Key.",
             )
             self.key_input.setFocus()
             return
@@ -201,7 +263,8 @@ class MainWindow(QWidget):
 
         # Teraz generuj streszczenie
         api_key = self.key_input.text().strip()
-        self._worker = SummaryWorker(text, api_key, self.meta)
+        provider = self._current_provider()
+        self._worker = SummaryWorker(text, api_key, self.meta, provider)
         self._worker.status.connect(self._on_status)
         self._worker.finished.connect(self._on_summary_done)
         self._worker.error.connect(self._on_error)

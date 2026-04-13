@@ -1,11 +1,18 @@
-"""Streszczanie transkrypcji przy użyciu Gemini LLM."""
+"""Streszczanie transkrypcji przy użyciu LLM (Gemini / Claude)."""
 
 import re
 import textwrap
+from enum import Enum
 
+import anthropic
 from google import genai
 
-from .transcript import get_full_transcript
+from .transcript import VideoMeta, get_full_transcript, linkify_timestamps
+
+
+class Provider(Enum):
+    GEMINI = "gemini"
+    CLAUDE = "claude"
 
 PROMPT = """\
 Poniżej znajduje się transkrypcja filmu z YouTube. Na jej podstawie napisz \
@@ -105,37 +112,87 @@ def wrap_markdown(text: str, width: int = 79) -> str:
     return "\n".join(result)
 
 
-def summarize(transcript: str, api_key: str) -> str:
-    """Wysyła transkrypcję do Gemini i zwraca streszczenie w Markdown."""
+def _summarize_gemini(transcript: str, api_key: str) -> str:
     client = genai.Client(api_key=api_key)
     response = client.models.generate_content(
         model="gemini-2.5-flash",
         contents=PROMPT.format(transcript=transcript),
     )
-    return wrap_markdown(response.text)
+    return response.text
+
+
+def _summarize_claude(transcript: str, api_key: str) -> str:
+    client = anthropic.Anthropic(api_key=api_key)
+    message = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=8192,
+        messages=[
+            {"role": "user", "content": PROMPT.format(transcript=transcript)}
+        ],
+    )
+    return message.content[0].text
+
+
+def summarize(
+    transcript: str,
+    api_key: str,
+    meta: VideoMeta | None = None,
+    provider: Provider = Provider.GEMINI,
+) -> str:
+    """Wysyła transkrypcję do LLM i zwraca streszczenie w Markdown.
+
+    Jeśli podano meta, dodaje nagłówek z metadanymi i linkuje timestampy.
+    """
+    if provider == Provider.CLAUDE:
+        raw = _summarize_claude(transcript, api_key)
+    else:
+        raw = _summarize_gemini(transcript, api_key)
+
+    text = wrap_markdown(raw)
+
+    if meta:
+        text = linkify_timestamps(text, meta.video_id)
+        text = meta.format_header() + "\n\n" + text
+
+    return text
 
 
 def main() -> None:
     import os
     import sys
 
-    if len(sys.argv) < 2:
-        print("Użycie: streszczenie <URL_filmu> [kod_języka]")
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    flags = [a for a in sys.argv[1:] if a.startswith("--")]
+
+    if not args:
+        print("Użycie: streszczenie [--claude] <URL_filmu> [kod_języka]")
         sys.exit(1)
 
-    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-    if not api_key:
-        print("Błąd: ustaw zmienną GEMINI_API_KEY lub GOOGLE_API_KEY")
-        sys.exit(1)
+    if "--claude" in flags:
+        provider = Provider.CLAUDE
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            print("Błąd: ustaw zmienną ANTHROPIC_API_KEY")
+            sys.exit(1)
+    else:
+        provider = Provider.GEMINI
+        api_key = (
+            os.environ.get("GEMINI_API_KEY")
+            or os.environ.get("GOOGLE_API_KEY")
+        )
+        if not api_key:
+            print("Błąd: ustaw zmienną GEMINI_API_KEY lub GOOGLE_API_KEY")
+            sys.exit(1)
 
-    url = sys.argv[1]
-    lang = sys.argv[2] if len(sys.argv) > 2 else None
+    url = args[0]
+    lang = args[1] if len(args) > 1 else None
 
     print("Pobieram transkrypcję...", file=sys.stderr)
-    transcript, _ = get_full_transcript(url, lang)
+    transcript, meta = get_full_transcript(url, lang)
 
-    print("Generuję streszczenie...", file=sys.stderr)
-    print(summarize(transcript, api_key))
+    label = "Claude" if provider == Provider.CLAUDE else "Gemini"
+    print(f"Generuję streszczenie ({label})...", file=sys.stderr)
+    print(summarize(transcript, api_key, meta, provider))
 
 
 if __name__ == "__main__":
