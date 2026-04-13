@@ -111,20 +111,16 @@ class MainWindow(QWidget):
 
         layout.addWidget(self.tabs, 1)
 
-        # --- Przyciski trybu ręcznego ---
-        self.manual_row = QHBoxLayout()
+        # --- Status bar ---
+        status_row = QHBoxLayout()
         self.copy_prompt_btn = QPushButton("Kopiuj prompt")
         self.copy_prompt_btn.clicked.connect(self._on_copy_prompt)
         self.copy_prompt_btn.hide()
-        self.manual_row.addWidget(self.copy_prompt_btn)
+        status_row.addWidget(self.copy_prompt_btn)
         self.save_manual_btn = QPushButton("Zapisz streszczenie")
         self.save_manual_btn.clicked.connect(self._on_save_manual)
         self.save_manual_btn.hide()
-        self.manual_row.addWidget(self.save_manual_btn)
-        layout.addLayout(self.manual_row)
-
-        # --- Status bar ---
-        status_row = QHBoxLayout()
+        status_row.addWidget(self.save_manual_btn)
         self.status_label = QLabel("Gotowe")
         status_row.addWidget(self.status_label, 1)
         self.progress = QProgressBar()
@@ -187,8 +183,28 @@ class MainWindow(QWidget):
 
         if is_manual:
             self.start_btn.setText("Pobierz transkrypcję")
+            # Jeśli mamy już transkrypcję, od razu aktywuj tryb ręczny
+            if getattr(self, "transcript_text", ""):
+                self.summary_view.setReadOnly(False)
+                if not self.summary_view.toPlainText():
+                    self.summary_view.setPlaceholderText(
+                        "Wklej tutaj streszczenie w Markdown..."
+                    )
+                self.copy_prompt_btn.show()
+                self.save_manual_btn.show()
+                self.tabs.setCurrentIndex(1)
+                self.summary_view.setFocus()
+                self.status_label.setText(
+                    "Transkrypcja pobrana — skopiuj prompt lub wklej streszczenie"
+                )
         else:
             self.start_btn.setText("Pobierz i streść")
+            # Wycofaj tryb ręczny jeśli nie ma jeszcze streszczenia
+            if not getattr(self, "summary_text", ""):
+                self.copy_prompt_btn.hide()
+                self.save_manual_btn.hide()
+                self.summary_view.setReadOnly(True)
+                self.summary_view.setPlaceholderText("")
 
         if provider == Provider.CLAUDE:
             self.key_label.setText("Anthropic API Key:")
