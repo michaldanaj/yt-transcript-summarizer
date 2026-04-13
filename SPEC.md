@@ -59,6 +59,7 @@ Widoczne tylko w trybie ręcznym, po pobraniu transkrypcji:
 ### Pasek statusu
 
 - Komunikaty o postępie (pobieranie, generowanie, kopiowanie promptu)
+- Etykieta statystyk transkrypcji: liczba słów i linii (po pobraniu)
 - Nieokreślony pasek postępu (`QProgressBar`) podczas operacji sieciowych
 
 ---
@@ -87,10 +88,12 @@ Widoczne tylko w trybie ręcznym, po pobraniu transkrypcji:
 
 Każde streszczenie (automatyczne i ręczne) przechodzi tę samą obróbkę:
 
-1. `wrap_markdown` — zawijanie wierszy do 79 znaków z zachowaniem
+1. `_strip_code_fence` — usunięcie owijającej ramki ` ```markdown … ``` `
+   jeśli LLM ją dodał
+2. `wrap_markdown` — zawijanie wierszy do 79 znaków z zachowaniem
    struktury Markdown (nagłówki, listy, bloki kodu, wzory LaTeX)
-2. `linkify_timestamps` — zamiana timestampów na linki do YouTube
-3. Dodanie nagłówka z metadanymi filmu (tytuł, kanał, data, URL)
+3. `linkify_timestamps` — zamiana timestampów na linki do YouTube
+4. Dodanie nagłówka z metadanymi filmu (tytuł, kanał, data, URL)
 
 ---
 
