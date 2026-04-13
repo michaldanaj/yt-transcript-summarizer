@@ -1,15 +1,39 @@
 # Transkrypcje YouTube
 
 Pobieranie transkrypcji filmów YouTube i generowanie streszczeń w Markdown
-przy pomocy Gemini LLM. Aplikacja desktopowa w PyQt6.
+przy pomocy LLM (Gemini, Claude) lub ręcznie. Aplikacja desktopowa w PyQt6.
 
 ## Wymagania
 
 - Python 3.12+
 - [uv](https://docs.astral.sh/uv/)
-- Klucz API Gemini (`GEMINI_API_KEY`)
+- Klucz API — co najmniej jeden z:
+  - `GEMINI_API_KEY` — Google Gemini
+  - `ANTHROPIC_API_KEY` — Anthropic Claude
+  - Żaden — w trybie ręcznym
 
 ## Instalacja
+
+### Instalacja w systemie
+
+```bash
+./install.sh
+```
+
+Skrypt instaluje komendy globalnie (`uv tool install`), kopiuje ikonę
+i wpis `.desktop`. Aplikacja pojawi się w menu systemowym.
+
+Aktualizacja (po `git pull` lub zmianach w kodzie):
+
+```bash
+./install.sh
+```
+
+Odinstalowanie:
+
+```bash
+./install.sh --remove
+```
 
 ### Tryb deweloperski (bez instalacji systemowej)
 
@@ -18,39 +42,40 @@ uv sync
 uv run transkrypcje-gui
 ```
 
-### Instalacja w systemie
+## GUI
 
-Instaluje komendy globalnie — dostępne z dowolnego miejsca:
+Uruchom z menu systemowego lub komendą:
 
 ```bash
-uv tool install .
 transkrypcje-gui
 ```
 
-Aktualizacja po zmianach w kodzie:
+### Tryby pracy
 
-```bash
-uv tool install --reinstall .
-```
+- **Gemini / Claude** — wklej URL, aplikacja pobierze transkrypcję
+  i automatycznie wygeneruje streszczenie przez wybrany model LLM.
+- **Ręczny** — aplikacja pobiera transkrypcję i udostępnia przycisk
+  **Kopiuj prompt**, który kopiuje do schowka gotowy prompt
+  z transkrypcją. Wklej go do dowolnego LLM, a otrzymane streszczenie
+  wklej z powrotem do aplikacji i kliknij **Zapisz streszczenie**.
 
-Odinstalowanie:
+Pliki (transkrypcja `.txt` i streszczenie `.md`) zapisywane są
+automatycznie w wybranym katalogu wyjściowym.
 
-```bash
-uv tool uninstall transkrypcje
-```
-
-## Użycie CLI
+## CLI
 
 ```bash
 # Transkrypcja na stdout
-uv run transkrypcja https://www.youtube.com/watch?v=VIDEO_ID
+transkrypcja https://www.youtube.com/watch?v=VIDEO_ID
 
 # Transkrypcja w konkretnym języku
-uv run transkrypcja https://www.youtube.com/watch?v=VIDEO_ID en
+transkrypcja https://www.youtube.com/watch?v=VIDEO_ID pl
 
-# Streszczenie na stdout
-GEMINI_API_KEY=... uv run streszczenie https://www.youtube.com/watch?v=VIDEO_ID
+# Streszczenie przez Gemini (domyślnie)
+GEMINI_API_KEY=... streszczenie https://www.youtube.com/watch?v=VIDEO_ID
 
-# Streszczenie do pliku
-GEMINI_API_KEY=... uv run streszczenie https://... > streszczenie.md
+# Streszczenie przez Claude
+ANTHROPIC_API_KEY=... streszczenie --claude https://www.youtube.com/watch?v=VIDEO_ID
 ```
+
+W trybie deweloperskim zamiast `transkrypcja` użyj `uv run transkrypcja` itd.
