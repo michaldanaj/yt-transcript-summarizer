@@ -126,10 +126,8 @@ Pobieranie transkrypcji (`TranscriptWorker`) i generowanie streszczenia
 
 | Błąd | Komunikat |
 |---|---|
-| Nieprawidłowy URL | „Nieprawidłowy URL lub ID filmu" |
-| Brak transkrypcji | „Film nie posiada transkrypcji w wybranym języku" |
-| Brak klucza API | „Podaj klucz {provider} API Key." |
-| Błąd sieci / API | Szczegóły w oknie dialogowym `QMessageBox.critical` |
+| Brak klucza API | „Podaj klucz {provider} API Key." (przed startem, walidacja w GUI) |
+| Nieprawidłowy URL, brak transkrypcji, błąd sieci / API | Komunikat wyjątku z biblioteki w `QMessageBox.critical` |
 
 ---
 
