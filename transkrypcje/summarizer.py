@@ -13,6 +13,7 @@ from .transcript import VideoMeta, get_full_transcript, linkify_timestamps
 class Provider(Enum):
     GEMINI = "gemini"
     CLAUDE = "claude"
+    MANUAL = "manual"
 
 PROMPT = """\
 Poniżej znajduje się transkrypcja filmu z YouTube. Na jej podstawie napisz \
@@ -133,28 +134,28 @@ def _summarize_claude(transcript: str, api_key: str) -> str:
     return message.content[0].text
 
 
+def postprocess_summary(raw: str, meta: VideoMeta | None = None) -> str:
+    """Formatuje surowe streszczenie: wrap + timestampy + nagłówek."""
+    text = wrap_markdown(raw)
+    if meta:
+        text = linkify_timestamps(text, meta.video_id)
+        text = meta.format_header() + "\n\n" + text
+    return text
+
+
 def summarize(
     transcript: str,
     api_key: str,
     meta: VideoMeta | None = None,
     provider: Provider = Provider.GEMINI,
 ) -> str:
-    """Wysyła transkrypcję do LLM i zwraca streszczenie w Markdown.
-
-    Jeśli podano meta, dodaje nagłówek z metadanymi i linkuje timestampy.
-    """
+    """Wysyła transkrypcję do LLM i zwraca streszczenie w Markdown."""
     if provider == Provider.CLAUDE:
         raw = _summarize_claude(transcript, api_key)
     else:
         raw = _summarize_gemini(transcript, api_key)
 
-    text = wrap_markdown(raw)
-
-    if meta:
-        text = linkify_timestamps(text, meta.video_id)
-        text = meta.format_header() + "\n\n" + text
-
-    return text
+    return postprocess_summary(raw, meta)
 
 
 def main() -> None:

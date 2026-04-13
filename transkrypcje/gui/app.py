@@ -24,7 +24,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from ..summarizer import Provider
+from ..summarizer import Provider, postprocess_summary
 from .workers import SummaryWorker, TranscriptWorker
 
 
@@ -85,6 +85,7 @@ class MainWindow(QWidget):
         self.provider_combo = QComboBox()
         self.provider_combo.addItem("Gemini", Provider.GEMINI)
         self.provider_combo.addItem("Claude", Provider.CLAUDE)
+        self.provider_combo.addItem("Ręczny", Provider.MANUAL)
         self.provider_combo.currentIndexChanged.connect(
             self._on_provider_changed
         )
@@ -109,6 +110,12 @@ class MainWindow(QWidget):
         self.tabs.addTab(self.summary_view, "Streszczenie")
 
         layout.addWidget(self.tabs, 1)
+
+        # --- Przycisk zapisu ręcznego streszczenia ---
+        self.save_manual_btn = QPushButton("Zapisz streszczenie")
+        self.save_manual_btn.clicked.connect(self._on_save_manual)
+        self.save_manual_btn.hide()
+        layout.addWidget(self.save_manual_btn)
 
         # --- Status bar ---
         status_row = QHBoxLayout()
@@ -160,7 +167,7 @@ class MainWindow(QWidget):
 
     def _on_provider_changed(self) -> None:
         # Zapisz bieżący klucz do słownika
-        if hasattr(self, "_last_provider"):
+        if hasattr(self, "_last_provider") and self._last_provider != Provider.MANUAL:
             self._api_keys[self._last_provider] = (
                 self.key_input.text().strip()
             )
@@ -168,14 +175,24 @@ class MainWindow(QWidget):
         provider = self._current_provider()
         self._last_provider = provider
 
+        is_manual = provider == Provider.MANUAL
+        self.key_label.setVisible(not is_manual)
+        self.key_input.setVisible(not is_manual)
+
+        if is_manual:
+            self.start_btn.setText("Pobierz transkrypcję")
+        else:
+            self.start_btn.setText("Pobierz i streść")
+
         if provider == Provider.CLAUDE:
             self.key_label.setText("Anthropic API Key:")
             self.key_input.setPlaceholderText("Klucz API Claude")
-        else:
+        elif provider == Provider.GEMINI:
             self.key_label.setText("Gemini API Key:")
             self.key_input.setPlaceholderText("Klucz API Gemini")
 
-        self.key_input.setText(self._api_keys.get(provider, ""))
+        if not is_manual:
+            self.key_input.setText(self._api_keys.get(provider, ""))
 
     def _save_settings(self) -> None:
         self.settings.setValue("output_dir", self.dir_input.text())
@@ -219,10 +236,12 @@ class MainWindow(QWidget):
         if not url:
             return
 
-        api_key = self.key_input.text().strip()
         provider = self._current_provider()
-        provider_label = "Anthropic" if provider == Provider.CLAUDE else "Gemini"
-        if not api_key:
+        api_key = self.key_input.text().strip()
+        if provider != Provider.MANUAL and not api_key:
+            provider_label = (
+                "Anthropic" if provider == Provider.CLAUDE else "Gemini"
+            )
             QMessageBox.warning(
                 self,
                 "Brak klucza API",
@@ -233,6 +252,9 @@ class MainWindow(QWidget):
 
         self.transcript_view.clear()
         self.summary_view.clear()
+        self.summary_view.setReadOnly(True)
+        self.summary_view.setPlaceholderText("")
+        self.save_manual_btn.hide()
         self.meta = None
         self.transcript_text = ""
         self.summary_text = ""
@@ -261,18 +283,37 @@ class MainWindow(QWidget):
         # Zapisz transkrypcję
         self._save_transcript()
 
-        # Teraz generuj streszczenie
-        api_key = self.key_input.text().strip()
         provider = self._current_provider()
-        self._worker = SummaryWorker(text, api_key, self.meta, provider)
-        self._worker.status.connect(self._on_status)
-        self._worker.finished.connect(self._on_summary_done)
-        self._worker.error.connect(self._on_error)
-        self._worker.start()
+        if provider == Provider.MANUAL:
+            # Tryb ręczny — użytkownik wkleja streszczenie
+            self._set_busy(False)
+            self.summary_view.setReadOnly(False)
+            self.summary_view.clear()
+            self.summary_view.setPlaceholderText(
+                "Wklej tutaj streszczenie w Markdown..."
+            )
+            self.save_manual_btn.show()
+            self.tabs.setCurrentIndex(1)
+            self.summary_view.setFocus()
+            self.status_label.setText(
+                "Transkrypcja pobrana — wklej streszczenie"
+            )
+        else:
+            # Tryb automatyczny — generuj streszczenie przez LLM
+            api_key = self.key_input.text().strip()
+            self._worker = SummaryWorker(
+                text, api_key, self.meta, provider
+            )
+            self._worker.status.connect(self._on_status)
+            self._worker.finished.connect(self._on_summary_done)
+            self._worker.error.connect(self._on_error)
+            self._worker.start()
 
     def _on_summary_done(self, summary: str) -> None:
         self.summary_text = summary
+        self.summary_view.setReadOnly(True)
         self.summary_view.setMarkdown(summary)
+        self.save_manual_btn.hide()
         self.tabs.setCurrentIndex(1)
         self._set_busy(False)
 
@@ -282,6 +323,20 @@ class MainWindow(QWidget):
             self._open_in_typora(summary_path)
 
         self.status_label.setText("Gotowe — pliki zapisane")
+
+    def _on_save_manual(self) -> None:
+        """Zapisz ręcznie wklejone streszczenie z postprocessingiem."""
+        raw = self.summary_view.toPlainText().strip()
+        if not raw:
+            QMessageBox.warning(
+                self,
+                "Brak streszczenia",
+                "Wklej streszczenie przed zapisaniem.",
+            )
+            return
+
+        summary = postprocess_summary(raw, self.meta)
+        self._on_summary_done(summary)
 
     def _on_error(self, msg: str) -> None:
         self._set_busy(False)
