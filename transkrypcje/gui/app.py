@@ -6,7 +6,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from PyQt6.QtCore import QSettings, Qt
+from PyQt6.QtCore import QSettings, Qt, QTimer
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QApplication,
@@ -92,9 +92,15 @@ class MainWindow(QWidget):
         key_row.addWidget(self.provider_combo)
 
         self.key_label = QLabel("API Key:")
+        sp = self.key_label.sizePolicy()
+        sp.setRetainSizeWhenHidden(True)
+        self.key_label.setSizePolicy(sp)
         key_row.addWidget(self.key_label)
         self.key_input = QLineEdit()
         self.key_input.setEchoMode(QLineEdit.EchoMode.Password)
+        sp = self.key_input.sizePolicy()
+        sp.setRetainSizeWhenHidden(True)
+        self.key_input.setSizePolicy(sp)
         key_row.addWidget(self.key_input, 1)
         layout.addLayout(key_row)
 
@@ -107,7 +113,12 @@ class MainWindow(QWidget):
 
         self.summary_view = QTextEdit()
         self.summary_view.setReadOnly(True)
+        self.summary_view.textChanged.connect(self._on_summary_text_changed)
         self.tabs.addTab(self.summary_view, "Streszczenie")
+
+        self._autosave_timer = QTimer(self)
+        self._autosave_timer.setSingleShot(True)
+        self._autosave_timer.timeout.connect(self._do_autosave)
 
         layout.addWidget(self.tabs, 1)
 
@@ -275,6 +286,7 @@ class MainWindow(QWidget):
             self.key_input.setFocus()
             return
 
+        self._autosave_timer.stop()
         self.transcript_view.clear()
         self.summary_view.clear()
         self.summary_view.setReadOnly(True)
@@ -364,6 +376,32 @@ class MainWindow(QWidget):
         text = PROMPT.format(transcript=self.transcript_text)
         QApplication.clipboard().setText(text)
         self.status_label.setText("Prompt skopiowany do schowka")
+
+    def _on_summary_text_changed(self) -> None:
+        """Obsługa zmiany tekstu streszczenia w trybie ręcznym."""
+        if self._current_provider() != Provider.MANUAL:
+            return
+        if not self.transcript_text:
+            return
+        raw = self.summary_view.toPlainText().strip()
+        if not raw:
+            return
+        if "skopiuj" in self.status_label.text():
+            self.status_label.setText("Wklejono streszczenie — zapisywanie...")
+        self._autosave_timer.start(1500)
+
+    def _do_autosave(self) -> None:
+        """Automatyczny zapis streszczenia z postprocessingiem."""
+        raw = self.summary_view.toPlainText().strip()
+        if not raw:
+            return
+        summary = postprocess_summary(raw, self.meta)
+        first_save = not self.summary_text
+        self.summary_text = summary
+        summary_path = self._save_summary()
+        if summary_path and first_save:
+            self._open_in_typora(summary_path)
+        self.status_label.setText("Streszczenie zapisane automatycznie")
 
     def _on_save_manual(self) -> None:
         """Zapisz ręcznie wklejone streszczenie z postprocessingiem."""

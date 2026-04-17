@@ -2,9 +2,9 @@
 
 ## Cel
 
-Aplikacja desktopowa (Linux, PyQt6) do pobierania transkrypcji filmów YouTube
-i generowania ich streszczeń w Markdown przy pomocy LLM (Gemini, Claude)
-lub ręcznego wklejania streszczeń.
+Aplikacja desktopowa (Linux, PyQt6) do pobierania transkrypcji filmów YouTube i
+generowania ich streszczeń w Markdown przy pomocy LLM (Gemini, Claude) lub
+ręcznego wklejania streszczeń.
 
 ---
 
@@ -27,6 +27,7 @@ Jedno okno (`MainWindow`) z pionowym układem elementów.
 
 - Dropdown **Model**: Gemini / Claude / Ręczny
 - Pole **API Key** (hasło) — ukrywane w trybie ręcznym
+- Po ukryciu pola API Key w trybie ręcznym, przycisk Model nie powinien zmieniać rozmiaru i pozycji
 - Etykieta klucza zmienia się dynamicznie (Gemini API Key / Anthropic API Key)
 - Klucze API przechowywane osobno dla każdego providera w `QSettings`
 - Fallback na zmienne środowiskowe: `GEMINI_API_KEY` / `GOOGLE_API_KEY`,
@@ -37,29 +38,30 @@ Jedno okno (`MainWindow`) z pionowym układem elementów.
 **Zakładka Transkrypcja**
 
 - `QTextEdit` (read-only, monospace) z pełną transkrypcją:
-  - nagłówek z metadanymi (tytuł, kanał, data publikacji, URL)
-  - spis treści rozdziałów (jeśli film je posiada)
-  - tekst z timestampami i nagłówkami rozdziałów
+    - nagłówek z metadanymi (tytuł, kanał, data publikacji, URL)
+    - spis treści rozdziałów (jeśli film je posiada)
+    - tekst z timestampami i nagłówkami rozdziałów
 - Transkrypcja zapisywana automatycznie jako `<tytuł> - <kanał>_transcript.txt`
 
 **Zakładka Streszczenie**
 
 - `QTextEdit` ze streszczeniem (renderowany Markdown)
-- W trybie ręcznym — edytowalny, z placeholderem
-  „Wklej tutaj streszczenie w Markdown…"
+- W trybie ręcznym — edytowalny, z placeholderem „Wklej tutaj streszczenie w
+  Markdown…"
 - Streszczenie zapisywane automatycznie jako `<tytuł> - <kanał>.md`
 
 ### Przyciski trybu ręcznego
 
 Widoczne tylko w trybie ręcznym, po pobraniu transkrypcji:
 
-- **Kopiuj prompt** — kopiuje do schowka pełny prompt (instrukcja + transkrypcja),
-  gotowy do wklejenia w zewnętrznym LLM
+- **Kopiuj prompt** — kopiuje do schowka pełny prompt (instrukcja +
+  transkrypcja), gotowy do wklejenia w zewnętrznym LLM
 - **Zapisz streszczenie** — uruchamia postprocessing wklejonego tekstu i zapis
 
 ### Pasek statusu
 
 - Komunikaty o postępie (pobieranie, generowanie, kopiowanie promptu)
+- Po wklejeniu streszczenia w trybie ręcznym, powinien zniknąć komunikat mówiący o możliwości pobrania prompt i streszczeniu
 - Etykieta statystyk transkrypcji: liczba słów i linii (po pobraniu)
 - Nieokreślony pasek postępu (`QProgressBar`) podczas operacji sieciowych
 
@@ -79,9 +81,10 @@ Widoczne tylko w trybie ręcznym, po pobraniu transkrypcji:
 1. Użytkownik wkleja URL → pobieranie transkrypcji (bez klucza API)
 2. Zakładka streszczenia staje się edytowalna
 3. Użytkownik może kliknąć **Kopiuj prompt** → wkleić do zewnętrznego LLM
-4. Po wklejeniu odpowiedzi klika **Zapisz streszczenie**
-5. Postprocessing (zawijanie Markdown, linkowanie timestampów, nagłówek
-   z metadanymi) i zapis jak w trybie automatycznym
+4. Po wklejeniu odpowiedzi, streszczenie automatycznie się zapisuje, ale wciąż
+   użytkownik może kliknąć **Zapisz streszczenie**
+5. Postprocessing (zawijanie Markdown, linkowanie timestampów, nagłówek z
+   metadanymi) i zapis jak w trybie automatycznym
 
 ---
 
@@ -89,10 +92,10 @@ Widoczne tylko w trybie ręcznym, po pobraniu transkrypcji:
 
 Każde streszczenie (automatyczne i ręczne) przechodzi tę samą obróbkę:
 
-1. `_strip_code_fence` — usunięcie owijającej ramki ` ```markdown … ``` `
-   jeśli LLM ją dodał
-2. `wrap_markdown` — zawijanie wierszy do 79 znaków z zachowaniem
-   struktury Markdown (nagłówki, listy, bloki kodu, wzory LaTeX)
+1. `_strip_code_fence` — usunięcie owijającej ramki ` ```markdown … ``` ` jeśli
+   LLM ją dodał
+2. `wrap_markdown` — zawijanie wierszy do 79 znaków z zachowaniem struktury
+   Markdown (nagłówki, listy, bloki kodu, wzory LaTeX)
 3. `linkify_timestamps` — zamiana timestampów na linki do YouTube
 4. Dodanie nagłówka z metadanymi filmu (tytuł, kanał, data, URL)
 
@@ -102,13 +105,13 @@ Każde streszczenie (automatyczne i ręczne) przechodzi tę samą obróbkę:
 
 Zapisywane automatycznie przy zamknięciu okna:
 
-| Parametr | Opis |
-|---|---|
-| `output_dir` | Katalog wyjściowy (domyślnie `~/Dokumenty`) |
-| `provider` | Wybrany provider (gemini / claude / manual) |
-| `api_key_gemini` | Klucz API Gemini |
-| `api_key_claude` | Klucz API Claude |
-| `geometry` | Pozycja i rozmiar okna |
+| Parametr         | Opis                                        |
+| ---------------- | ------------------------------------------- |
+| `output_dir`     | Katalog wyjściowy (domyślnie `~/Dokumenty`) |
+| `provider`       | Wybrany provider (gemini / claude / manual) |
+| `api_key_gemini` | Klucz API Gemini                            |
+| `api_key_claude` | Klucz API Claude                            |
+| `geometry`       | Pozycja i rozmiar okna                      |
 
 ---
 
@@ -124,10 +127,10 @@ Pobieranie transkrypcji (`TranscriptWorker`) i generowanie streszczenia
 
 ## Obsługa błędów
 
-| Błąd | Komunikat |
-|---|---|
-| Brak klucza API | „Podaj klucz {provider} API Key." (przed startem, walidacja w GUI) |
-| Nieprawidłowy URL, brak transkrypcji, błąd sieci / API | Komunikat wyjątku z biblioteki w `QMessageBox.critical` |
+| Błąd                                                   | Komunikat                                                          |
+| ------------------------------------------------------ | ------------------------------------------------------------------ |
+| Brak klucza API                                        | „Podaj klucz {provider} API Key." (przed startem, walidacja w GUI) |
+| Nieprawidłowy URL, brak transkrypcji, błąd sieci / API | Komunikat wyjątku z biblioteki w `QMessageBox.critical`            |
 
 ---
 
@@ -160,11 +163,11 @@ transkrypcje/
 
 ## Technologie
 
-| Rola | Biblioteka |
-|---|---|
-| GUI | PyQt6 |
-| Transkrypcje | youtube-transcript-api |
-| Metadane YT (rozdziały, tytuł) | yt-dlp |
-| LLM — Gemini | google-genai |
-| LLM — Claude | anthropic |
-| Zarządzanie środowiskiem | uv |
+| Rola                           | Biblioteka             |
+| ------------------------------ | ---------------------- |
+| GUI                            | PyQt6                  |
+| Transkrypcje                   | youtube-transcript-api |
+| Metadane YT (rozdziały, tytuł) | yt-dlp                 |
+| LLM — Gemini                   | google-genai           |
+| LLM — Claude                   | anthropic              |
+| Zarządzanie środowiskiem       | uv                     |
