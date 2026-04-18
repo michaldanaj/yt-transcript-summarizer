@@ -35,6 +35,8 @@ Po każdej zmianie bądź uszczegółowieniu założeń, należy zaktualizować 
 
 Po każdej zmianie bądź uszczegółowieniu założeń, należy zaktualizować specyfikację w pliku SPEC.md.
 
+Specyfikacja również powinna być zapisywana w git.
+
 ## Git
 
 Każda logicznie spójna zmiana powinna być commitowana od razu po jej
