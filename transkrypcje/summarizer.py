@@ -20,7 +20,8 @@ Poniżej znajduje się transkrypcja filmu z YouTube. Na jej podstawie napisz \
 streszczenie w języku polskim, w formacie Markdown.
 
 Streszczenie powinno zawierać:
-1. **Tytuł** — krótki, opisowy tytuł streszczenia (nagłówek H1)
+1. **Tytuł** — krótki, opisowy tytuł streszczenia (nagłówek H1); \
+nie zaczynaj go od „Streszczenie:"
 2. **Główne tezy** — sekcja z kluczowymi punktami filmu (lista)
 3. **Streszczenie** — pełne streszczenie filmu, podzielone na sekcje \
 odpowiadające rozdziałom (jeśli są). Każda sekcja powinna mieć nagłówek H2 \
@@ -150,9 +151,14 @@ def _strip_code_fence(text: str) -> str:
     return stripped
 
 
+def _strip_summary_prefix(text: str) -> str:
+    """Usuwa 'Streszczenie:' z początku tytułu H1 jeśli LLM je dodał."""
+    return re.sub(r"^(# )Streszczenie:\s*", r"\1", text, flags=re.MULTILINE)
+
+
 def postprocess_summary(raw: str, meta: VideoMeta | None = None) -> str:
     """Formatuje surowe streszczenie: wrap + timestampy + nagłówek."""
-    text = wrap_markdown(_strip_code_fence(raw))
+    text = wrap_markdown(_strip_summary_prefix(_strip_code_fence(raw)))
     if meta:
         text = linkify_timestamps(text, meta.video_id)
         text = meta.format_header() + "\n\n" + text
