@@ -64,8 +64,9 @@ class MainWindow(QWidget):
         self.url_input.textChanged.connect(self._on_url_changed)
         _orig_mouse_press = self.url_input.mousePressEvent
         def _url_mouse_press(event):
+            had_focus = self.url_input.hasFocus()
             _orig_mouse_press(event)
-            if self.url_input.text():
+            if not had_focus and self.url_input.text():
                 QTimer.singleShot(0, self.url_input.selectAll)
         self.url_input.mousePressEvent = _url_mouse_press
         url_row.addWidget(self.url_input, 1)
