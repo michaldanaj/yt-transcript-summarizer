@@ -62,13 +62,15 @@ class MainWindow(QWidget):
         )
         self.url_input.returnPressed.connect(self._on_start)
         self.url_input.textChanged.connect(self._on_url_changed)
-        _orig_mouse_press = self.url_input.mousePressEvent
-        def _url_mouse_press(event):
-            had_focus = self.url_input.hasFocus()
-            _orig_mouse_press(event)
-            if not had_focus and self.url_input.text():
+        _orig_focus_in = self.url_input.focusInEvent
+        def _url_focus_in(event):
+            _orig_focus_in(event)
+            if (
+                event.reason() == Qt.FocusReason.MouseFocusReason
+                and self.url_input.text()
+            ):
                 QTimer.singleShot(0, self.url_input.selectAll)
-        self.url_input.mousePressEvent = _url_mouse_press
+        self.url_input.focusInEvent = _url_focus_in
         url_row.addWidget(self.url_input, 1)
         self.start_btn = QPushButton("Pobierz i streść")
         self.start_btn.clicked.connect(self._on_start)
