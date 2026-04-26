@@ -46,6 +46,8 @@ class MainWindow(QWidget):
         self.transcript_text = ""
         self.summary_text = ""
         self._worker = None
+        self._transcript_words = 0
+        self._transcript_lines = 0
 
         self._build_ui()
         self._restore_settings()
@@ -306,7 +308,12 @@ class MainWindow(QWidget):
         self.meta = None
         self.transcript_text = ""
         self.summary_text = ""
+        self._transcript_words = 0
+        self._transcript_lines = 0
         self._set_busy(True)
+
+        self.tabs.setCurrentIndex(0)
+        self.transcript_view.setFocus()
 
         self._worker = TranscriptWorker(url)
         self._worker.status.connect(self._on_status)
@@ -319,6 +326,16 @@ class MainWindow(QWidget):
         if ("youtube.com/watch?v=" in text or "youtu.be/" in text) and self.start_btn.isEnabled():
             self._on_start()
 
+    def _update_stats_label(self, summary_text: str = "") -> None:
+        parts = [
+            f"transkrypcja: {self._transcript_words} słów,"
+            f" {self._transcript_lines} linii"
+        ]
+        if summary_text:
+            words = len(summary_text.split())
+            parts.append(f"streszczenie: {words} słów")
+        self.transcript_stats_label.setText(" | ".join(parts))
+
     def _on_status(self, msg: str) -> None:
         self.status_label.setText(msg)
 
@@ -327,12 +344,11 @@ class MainWindow(QWidget):
         self.transcript_text = text
         self.transcript_view.setPlainText(text)
         self.tabs.setCurrentIndex(0)
+        self.transcript_view.setFocus()
 
-        words = len(text.split())
-        lines = text.count("\n") + 1 if text else 0
-        self.transcript_stats_label.setText(
-            f"transkrypcja: {words} słów, {lines} linii"
-        )
+        self._transcript_words = len(text.split())
+        self._transcript_lines = text.count("\n") + 1 if text else 0
+        self._update_stats_label()
 
         # Zapisz transkrypcję
         self._save_transcript()
@@ -372,6 +388,7 @@ class MainWindow(QWidget):
         self.save_manual_btn.hide()
         self.tabs.setCurrentIndex(1)
         self._set_busy(False)
+        self._update_stats_label(summary)
 
         # Zapisz streszczenie i otwórz w Typie
         summary_path = self._save_summary()
@@ -407,6 +424,7 @@ class MainWindow(QWidget):
         summary = postprocess_summary(raw, self.meta)
         first_save = not self.summary_text
         self.summary_text = summary
+        self._update_stats_label(summary)
         summary_path = self._save_summary()
         if summary_path and first_save:
             self._open_in_typora(summary_path)
