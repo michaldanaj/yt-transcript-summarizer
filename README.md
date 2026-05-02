@@ -55,8 +55,10 @@ uv run transkrypcje-gui
 Uruchom z menu systemowego lub komendą:
 
 ```bash
-transkrypcje-gui
+transkrypcje-gui [URL]
 ```
+
+Podanie URL od razu wypełnia pole i rozpoczyna pobieranie.
 
 ### Tryby pracy
 

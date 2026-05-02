@@ -139,8 +139,11 @@ Pobieranie transkrypcji (`TranscriptWorker`) i generowanie streszczenia
 ```
 transkrypcja <URL> [kod_języka]             # pobierz transkrypcję
 streszczenie [--claude] <URL> [kod_języka]  # wygeneruj streszczenie
-transkrypcje-gui                            # uruchom GUI
+transkrypcje-gui [URL]                      # uruchom GUI (opcjonalnie z URL)
 ```
+
+Podanie URL jako argumentu wypełnia pole i automatycznie rozpoczyna pobieranie,
+identycznie jak ręczne wklejenie URL w aplikacji.
 
 ---
 

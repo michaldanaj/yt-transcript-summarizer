@@ -475,11 +475,14 @@ class MainWindow(QWidget):
 
 
 def main() -> None:
-    app = QApplication(sys.argv)
+    url_arg = sys.argv[1] if len(sys.argv) > 1 else None
+    app = QApplication(sys.argv[:1])
     app.setApplicationName("Transkrypcje YouTube")
     app.setDesktopFileName("transkrypcje-gui")
     window = MainWindow()
     window.show()
+    if url_arg:
+        window.url_input.setText(url_arg)
     sys.exit(app.exec())
 
 
