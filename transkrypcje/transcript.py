@@ -93,7 +93,7 @@ class VideoMeta:
 def fetch_meta(video_id: str) -> VideoMeta:
     """Pobiera metadane filmu przez yt-dlp."""
     url = f"https://www.youtube.com/watch?v={video_id}"
-    ydl_opts = {"skip_download": True, "quiet": True}
+    ydl_opts = {"skip_download": True, "quiet": True, "no_warnings": True}
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=False)
 
