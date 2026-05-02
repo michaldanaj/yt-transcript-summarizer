@@ -113,6 +113,14 @@ class MainWindow(QWidget):
         sp.setRetainSizeWhenHidden(True)
         self.key_input.setSizePolicy(sp)
         key_row.addWidget(self.key_input, 1)
+        self.copy_prompt_btn = QPushButton("Kopiuj prompt")
+        self.copy_prompt_btn.clicked.connect(self._on_copy_prompt)
+        self.copy_prompt_btn.setEnabled(False)
+        key_row.addWidget(self.copy_prompt_btn)
+        self.save_manual_btn = QPushButton("Zapisz streszczenie")
+        self.save_manual_btn.clicked.connect(self._on_save_manual)
+        self.save_manual_btn.setEnabled(False)
+        key_row.addWidget(self.save_manual_btn)
         layout.addLayout(key_row)
 
         # --- Tabs ---
@@ -135,14 +143,6 @@ class MainWindow(QWidget):
 
         # --- Status bar ---
         status_row = QHBoxLayout()
-        self.copy_prompt_btn = QPushButton("Kopiuj prompt")
-        self.copy_prompt_btn.clicked.connect(self._on_copy_prompt)
-        self.copy_prompt_btn.hide()
-        status_row.addWidget(self.copy_prompt_btn)
-        self.save_manual_btn = QPushButton("Zapisz streszczenie")
-        self.save_manual_btn.clicked.connect(self._on_save_manual)
-        self.save_manual_btn.hide()
-        status_row.addWidget(self.save_manual_btn)
         self.status_label = QLabel("Gotowe")
         status_row.addWidget(self.status_label, 1)
         self.transcript_stats_label = QLabel("")
@@ -215,8 +215,8 @@ class MainWindow(QWidget):
                     self.summary_view.setPlaceholderText(
                         "Wklej tutaj streszczenie w Markdown..."
                     )
-                self.copy_prompt_btn.show()
-                self.save_manual_btn.show()
+                self.copy_prompt_btn.setEnabled(True)
+                self.save_manual_btn.setEnabled(True)
                 self.tabs.setCurrentIndex(1)
                 self.summary_view.setFocus()
                 self.status_label.setText(
@@ -226,8 +226,8 @@ class MainWindow(QWidget):
             self.start_btn.setText("Pobierz i streść")
             # Wycofaj tryb ręczny jeśli nie ma jeszcze streszczenia
             if not getattr(self, "summary_text", ""):
-                self.copy_prompt_btn.hide()
-                self.save_manual_btn.hide()
+                self.copy_prompt_btn.setEnabled(False)
+                self.save_manual_btn.setEnabled(False)
                 self.summary_view.setReadOnly(True)
                 self.summary_view.setPlaceholderText("")
 
@@ -302,8 +302,8 @@ class MainWindow(QWidget):
         self.summary_view.clear()
         self.summary_view.setReadOnly(True)
         self.summary_view.setPlaceholderText("")
-        self.copy_prompt_btn.hide()
-        self.save_manual_btn.hide()
+        self.copy_prompt_btn.setEnabled(False)
+        self.save_manual_btn.setEnabled(False)
         self.transcript_stats_label.setText("")
         self.meta = None
         self.transcript_text = ""
@@ -362,8 +362,8 @@ class MainWindow(QWidget):
             self.summary_view.setPlaceholderText(
                 "Wklej tutaj streszczenie w Markdown..."
             )
-            self.copy_prompt_btn.show()
-            self.save_manual_btn.show()
+            self.copy_prompt_btn.setEnabled(True)
+            self.save_manual_btn.setEnabled(True)
             self.tabs.setCurrentIndex(1)
             self.summary_view.setFocus()
             self.status_label.setText(
@@ -384,8 +384,8 @@ class MainWindow(QWidget):
         self.summary_text = summary
         self.summary_view.setReadOnly(True)
         self.summary_view.setMarkdown(summary)
-        self.copy_prompt_btn.hide()
-        self.save_manual_btn.hide()
+        self.copy_prompt_btn.setEnabled(False)
+        self.save_manual_btn.setEnabled(False)
         self.tabs.setCurrentIndex(1)
         self._set_busy(False)
         self._update_stats_label(summary)
