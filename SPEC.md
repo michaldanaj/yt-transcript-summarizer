@@ -17,6 +17,9 @@ Jedno okno (`MainWindow`) z pionowym układem elementów.
 - Pole tekstowe: URL filmu YouTube
 - Przycisk **Pobierz i streść** (w trybie ręcznym: **Pobierz transkrypcję**)
 - Wklejenie linku YouTube automatycznie rozpoczyna pobieranie
+- Przy starcie aplikacji: jeśli schowek systemowy zawiera link YouTube, jest
+  automatycznie wklejany do pola URL i pobieranie rozpoczyna się bez działania
+  użytkownika
 
 ### Wiersz katalogu wyjściowego
 

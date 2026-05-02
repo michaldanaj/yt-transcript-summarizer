@@ -474,6 +474,13 @@ class MainWindow(QWidget):
             subprocess.Popen(["xdg-open", str(path)])
 
 
+def _youtube_url_from_clipboard() -> str | None:
+    text = QApplication.clipboard().text().strip()
+    if "youtube.com/watch?v=" in text or "youtu.be/" in text:
+        return text
+    return None
+
+
 def main() -> None:
     url_arg = sys.argv[1] if len(sys.argv) > 1 else None
     app = QApplication(sys.argv[:1])
@@ -483,6 +490,8 @@ def main() -> None:
     window.show()
     if url_arg:
         window.url_input.setText(url_arg)
+    elif clip_url := _youtube_url_from_clipboard():
+        window.url_input.setText(clip_url)
     sys.exit(app.exec())
 
 
