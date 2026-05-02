@@ -163,6 +163,8 @@ transkrypcje/
 
 ## Technologie
 
+### Zależności Python (zarządzane przez uv)
+
 | Rola                           | Biblioteka             |
 | ------------------------------ | ---------------------- |
 | GUI                            | PyQt6                  |
@@ -170,4 +172,12 @@ transkrypcje/
 | Metadane YT (rozdziały, tytuł) | yt-dlp                 |
 | LLM — Gemini                   | google-genai           |
 | LLM — Claude                   | anthropic              |
-| Zarządzanie środowiskiem       | uv                     |
+
+### Zależności systemowe
+
+| Narzędzie  | Rola                                                          | Wymagane       |
+| ---------- | ------------------------------------------------------------- | -------------- |
+| Python 3.12+ | Środowisko uruchomieniowe                                   | tak            |
+| uv         | Zarządzanie środowiskiem Python i instalacja aplikacji        | tak            |
+| yt-dlp     | Pobieranie metadanych filmów (tytuł, kanał, rozdziały)        | tak            |
+| Typora     | Automatyczne otwieranie wygenerowanych plików `.md`           | nie (fallback: `xdg-open`) |

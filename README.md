@@ -5,12 +5,23 @@ przy pomocy LLM (Gemini, Claude) lub ręcznie. Aplikacja desktopowa w PyQt6.
 
 ## Wymagania
 
+### Narzędzia systemowe
+
 - Python 3.12+
 - [uv](https://docs.astral.sh/uv/)
-- Klucz API — co najmniej jeden z:
-  - `GEMINI_API_KEY` — Google Gemini
-  - `ANTHROPIC_API_KEY` — Anthropic Claude
-  - Żaden — w trybie ręcznym
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) — do pobierania metadanych filmów
+  (tytuł, kanał, rozdziały); instalacja: `pip install yt-dlp` lub przez menedżer
+  pakietów systemowych
+- [Typora](https://typora.io/) *(opcjonalnie)* — do automatycznego otwierania
+  wygenerowanych plików `.md`; bez Typory używany jest `xdg-open`
+
+### Klucz API
+
+Co najmniej jeden z:
+
+- `GEMINI_API_KEY` — Google Gemini
+- `ANTHROPIC_API_KEY` — Anthropic Claude
+- Żaden — w trybie ręcznym
 
 ## Instalacja
 
