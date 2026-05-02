@@ -9,9 +9,6 @@ przy pomocy LLM (Gemini, Claude) lub ręcznie. Aplikacja desktopowa w PyQt6.
 
 - Python 3.12+
 - [uv](https://docs.astral.sh/uv/)
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) — do pobierania metadanych filmów
-  (tytuł, kanał, rozdziały); instalacja: `pip install yt-dlp` lub przez menedżer
-  pakietów systemowych
 - [Typora](https://typora.io/) *(opcjonalnie)* — do automatycznego otwierania
   wygenerowanych plików `.md`; bez Typory używany jest `xdg-open`
 

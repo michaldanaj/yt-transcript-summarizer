@@ -179,5 +179,4 @@ transkrypcje/
 | ---------- | ------------------------------------------------------------- | -------------- |
 | Python 3.12+ | Środowisko uruchomieniowe                                   | tak            |
 | uv         | Zarządzanie środowiskiem Python i instalacja aplikacji        | tak            |
-| yt-dlp     | Pobieranie metadanych filmów (tytuł, kanał, rozdziały)        | tak            |
 | Typora     | Automatyczne otwieranie wygenerowanych plików `.md`           | nie (fallback: `xdg-open`) |
