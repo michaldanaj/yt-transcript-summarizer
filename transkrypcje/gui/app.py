@@ -216,7 +216,6 @@ class MainWindow(QWidget):
                         "Wklej tutaj streszczenie w Markdown..."
                     )
                 self.copy_prompt_btn.setEnabled(True)
-                self.save_manual_btn.setEnabled(True)
                 self.tabs.setCurrentIndex(1)
                 self.summary_view.setFocus()
                 self.status_label.setText(
@@ -401,6 +400,7 @@ class MainWindow(QWidget):
         """Kopiuj prompt z transkrypcją do schowka."""
         text = PROMPT.format(transcript=self.transcript_text)
         QApplication.clipboard().setText(text)
+        self.save_manual_btn.setEnabled(True)
         self.status_label.setText("Prompt skopiowany do schowka")
 
     def _on_summary_text_changed(self) -> None:
