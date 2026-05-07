@@ -4,9 +4,6 @@ import re
 import textwrap
 from enum import Enum
 
-import anthropic
-from google import genai
-
 from .transcript import VideoMeta, get_full_transcript, linkify_timestamps
 
 
@@ -120,6 +117,8 @@ def wrap_markdown(text: str, width: int = 79) -> str:
 
 
 def _summarize_gemini(transcript: str, api_key: str) -> str:
+    from google import genai
+
     client = genai.Client(api_key=api_key)
     response = client.models.generate_content(
         model="gemini-2.5-flash",
@@ -129,6 +128,8 @@ def _summarize_gemini(transcript: str, api_key: str) -> str:
 
 
 def _summarize_claude(transcript: str, api_key: str) -> str:
+    import anthropic
+
     client = anthropic.Anthropic(api_key=api_key)
     message = client.messages.create(
         model="claude-sonnet-4-6",
