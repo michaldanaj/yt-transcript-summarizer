@@ -165,6 +165,13 @@ transkrypcje/
     └── workers.py     # TranscriptWorker, SummaryWorker
 ```
 
+### Zasady importów
+
+- `anthropic` i `google-genai` są importowane **leniwie** (wewnątrz
+  `_summarize_claude` / `_summarize_gemini`), a nie na poziomie modułu —
+  dzięki temu GUI uruchamia się szybko bez ładowania ciężkich bibliotek SDK
+  przy każdym starcie.
+
 ---
 
 ## Technologie
