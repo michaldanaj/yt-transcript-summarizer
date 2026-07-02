@@ -134,6 +134,62 @@ Pobieranie transkrypcji (`TranscriptWorker`) i generowanie streszczenia
 | ------------------------------------------------------ | ------------------------------------------------------------------ |
 | Brak klucza API                                        | „Podaj klucz {provider} API Key." (przed startem, walidacja w GUI) |
 | Nieprawidłowy URL, brak transkrypcji, błąd sieci / API | Komunikat wyjątku z biblioteki w `QMessageBox.critical`            |
+| Weryfikacja antybotowa YouTube (yt-dlp)                | Dedykowany komunikat `BotCheckError` — patrz niżej                 |
+
+### Weryfikacja antybotowa YouTube (yt-dlp)
+
+Pobieranie metadanych (`fetch_meta`) może zakończyć się błędem YouTube
+„Sign in to confirm you're not a bot". Najczęstsza przyczyna: przestarzała
+wersja yt-dlp — YouTube regularnie zmienia mechanizmy antybotowe, a yt-dlp
+wydaje poprawki, które je omijają (aktualizacja yt-dlp jest pierwszą linią
+obrony).
+
+Zachowanie aplikacji:
+
+1. `fetch_meta` przechwytuje `yt_dlp.utils.DownloadError`. Jeśli komunikat
+   zawiera sygnaturę bot-checku (fraza „Sign in to confirm"), zgłasza
+   dedykowany wyjątek `BotCheckError` (zdefiniowany w `transcript.py`).
+2. Komunikat wyjątku jest po polsku i zawiera:
+   - wyjaśnienie przyczyny (YouTube zablokował żądanie jako podejrzane;
+     zwykle winna jest przestarzała wersja yt-dlp),
+   - instrukcję aktualizacji: ponowne uruchomienie `./install.sh`
+     z katalogu projektu (patrz „Procedura aktualizacji" niżej),
+   - odesłanie do sekcji „Znane problemy" w README.
+3. GUI: komunikat trafia istniejącą ścieżką (sygnał `error` workera →
+   `_on_error`) do `QMessageBox.critical` — bez surowego tracebacku.
+4. CLI (`transkrypcja`, `streszczenie`): komunikat wypisywany na stderr,
+   wyjście z kodem 1, bez tracebacku.
+5. Pozostałe `DownloadError` przechodzą bez zmian (obecne zachowanie).
+
+### Procedura aktualizacji yt-dlp
+
+Aplikacja jest zainstalowana przez `uv tool install` (skrypt `install.sh`)
+w izolowanym środowisku `~/.local/share/uv/tools/transkrypcje`. To środowisko
+**nie korzysta z `uv.lock`** — zależności są rozwiązywane z `pyproject.toml`
+w momencie instalacji i pozostają zamrożone aż do reinstalacji.
+
+Aktualizacja zainstalowanej aplikacji (wraz z yt-dlp):
+
+```bash
+cd <katalog projektu> && ./install.sh
+```
+
+Skrypt wykrywa istniejącą instalację i wykonuje `uv tool install
+--reinstall`, co ponownie rozwiązuje zależności i pobiera najnowszą wersję
+yt-dlp dopuszczoną przez `pyproject.toml` (`yt-dlp>=...`).
+
+Środowisko deweloperskie (`.venv`, `uv run`) aktualizuje się osobno:
+
+```bash
+uv lock --upgrade-package yt-dlp
+```
+
+Procedura jest opisana także w README (sekcja „Znane problemy"), wraz z
+uwagą, że wersja yt-dlp z repozytorium dystrybucji nie ma znaczenia —
+aplikacja używa wyłącznie wersji z PyPI zainstalowanej przez uv.
+
+Poza zakresem (pozostaje w backlogu jako możliwe rozszerzenie): cookies
+z przeglądarki (`cookiesfrombrowser`) oraz fallback metadanych przez oEmbed.
 
 ---
 
@@ -157,7 +213,7 @@ transkrypcje/
 ├── transcript.py      # extract_video_id, fetch_meta, fetch_transcript,
 │                      #   available_languages, format_transcript,
 │                      #   get_full_transcript, linkify_timestamps,
-│                      #   VideoMeta
+│                      #   VideoMeta, BotCheckError
 ├── summarizer.py      # Provider, PROMPT, summarize, postprocess_summary,
 │                      #   wrap_markdown
 └── gui/
