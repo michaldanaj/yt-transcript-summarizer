@@ -7,6 +7,26 @@ import yt_dlp
 from youtube_transcript_api import YouTubeTranscriptApi
 
 
+class BotCheckError(Exception):
+    """YouTube odrzucił żądanie yt-dlp jako podejrzane (weryfikacja antybotowa)."""
+
+
+_BOT_CHECK_SIGNATURE = "Sign in to confirm"
+
+_BOT_CHECK_MESSAGE = (
+    "YouTube zablokował pobieranie metadanych filmu (weryfikacja antybotowa:\n"
+    "„Sign in to confirm you're not a bot”).\n"
+    "\n"
+    "Najczęstsza przyczyna to przestarzała wersja yt-dlp.\n"
+    "Zaktualizuj aplikację, uruchamiając ponownie skrypt instalacyjny\n"
+    "z katalogu projektu:\n"
+    "\n"
+    "    ./install.sh\n"
+    "\n"
+    "Szczegóły: README, sekcja „Znane problemy”."
+)
+
+
 def extract_video_id(url: str) -> str:
     """Wyciąga ID filmu z URL-a YouTube."""
     if "v=" in url:
@@ -95,7 +115,12 @@ def fetch_meta(video_id: str) -> VideoMeta:
     url = f"https://www.youtube.com/watch?v={video_id}"
     ydl_opts = {"skip_download": True, "quiet": True, "no_warnings": True}
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=False)
+        try:
+            info = ydl.extract_info(url, download=False)
+        except yt_dlp.utils.DownloadError as e:
+            if _BOT_CHECK_SIGNATURE in str(e):
+                raise BotCheckError(_BOT_CHECK_MESSAGE) from e
+            raise
 
         raw_date = info.get("upload_date", "")
         if len(raw_date) == 8:
@@ -216,7 +241,11 @@ def main() -> None:
 
     print(f"Pobieram transkrypcję dla filmu: {video_id}", file=sys.stderr)
 
-    meta = fetch_meta(video_id)
+    try:
+        meta = fetch_meta(video_id)
+    except BotCheckError as e:
+        print(f"Błąd: {e}", file=sys.stderr)
+        sys.exit(1)
     snippets, lang_name, lang_code = fetch_transcript(video_id, lang)
 
     langs = available_languages(video_id)

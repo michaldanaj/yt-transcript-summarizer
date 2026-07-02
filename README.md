@@ -89,3 +89,42 @@ ANTHROPIC_API_KEY=... streszczenie --claude https://www.youtube.com/watch?v=VIDE
 ```
 
 W trybie deweloperskim zamiast `transkrypcja` użyj `uv run transkrypcja` itd.
+
+## Znane problemy
+
+### „Sign in to confirm you're not a bot"
+
+Przy pobieraniu metadanych filmu YouTube może odrzucić żądanie komunikatem:
+
+```
+ERROR: [youtube] ...: Sign in to confirm you're not a bot.
+```
+
+To zabezpieczenie antybotowe YouTube. Najczęstsza przyczyna: **przestarzała
+wersja yt-dlp**. YouTube regularnie zmienia mechanizmy wykrywania botów,
+a yt-dlp wydaje poprawki, które je omijają — dlatego yt-dlp trzeba co jakiś
+czas aktualizować.
+
+**Rozwiązanie:** zaktualizuj aplikację, uruchamiając ponownie skrypt
+instalacyjny z katalogu projektu:
+
+```bash
+./install.sh
+```
+
+Skrypt przeinstalowuje aplikację (`uv tool install --reinstall`), pobierając
+przy tym najnowszą wersję yt-dlp z PyPI.
+
+Uwagi:
+
+- Wersja yt-dlp z repozytorium dystrybucji **nie ma znaczenia** — aplikacja
+  używa wyłącznie wersji z PyPI, zainstalowanej przez uv w izolowanym
+  środowisku (`~/.local/share/uv/tools/transkrypcje`). Środowisko to jest
+  zamrożone w momencie instalacji, dlatego samo wydanie nowej wersji yt-dlp
+  nic nie zmienia bez przeinstalowania.
+- Środowisko deweloperskie (`uv run ...`) aktualizuje się osobno:
+  `uv lock --upgrade-package yt-dlp`.
+- Jeśli po aktualizacji błąd nie znika, blokada może dotyczyć adresu IP
+  (np. VPN, sieć współdzielona) — wtedy pomaga zmiana sieci lub przekazanie
+  yt-dlp cookies zalogowanej przeglądarki (planowane rozszerzenie, patrz
+  BACKLOG).

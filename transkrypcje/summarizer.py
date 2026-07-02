@@ -4,7 +4,12 @@ import re
 import textwrap
 from enum import Enum
 
-from .transcript import VideoMeta, get_full_transcript, linkify_timestamps
+from .transcript import (
+    BotCheckError,
+    VideoMeta,
+    get_full_transcript,
+    linkify_timestamps,
+)
 
 
 class Provider(Enum):
@@ -212,7 +217,11 @@ def main() -> None:
     lang = args[1] if len(args) > 1 else None
 
     print("Pobieram transkrypcję...", file=sys.stderr)
-    transcript, meta = get_full_transcript(url, lang)
+    try:
+        transcript, meta = get_full_transcript(url, lang)
+    except BotCheckError as e:
+        print(f"Błąd: {e}", file=sys.stderr)
+        sys.exit(1)
 
     label = "Claude" if provider == Provider.CLAUDE else "Gemini"
     print(f"Generuję streszczenie ({label})...", file=sys.stderr)
