@@ -74,6 +74,9 @@ Widoczne tylko w trybie ręcznym, po pobraniu transkrypcji:
 
 ### Automatyczny (Gemini / Claude)
 
+Używane modele (na stałe w kodzie): `gemini-3.5-flash` (Gemini),
+`claude-sonnet-4-6` (Claude).
+
 1. Użytkownik wkleja URL → automatyczne pobieranie transkrypcji
 2. Po pobraniu transkrypcji → automatyczne generowanie streszczenia przez LLM
 3. Streszczenie zapisywane do pliku i otwierane w Typorze (lub domyślnej
