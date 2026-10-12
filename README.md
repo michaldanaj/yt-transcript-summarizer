@@ -3,6 +3,18 @@
 Pobieranie transkrypcji filmów YouTube i generowanie streszczeń w Markdown
 przy pomocy LLM (Gemini, Claude) lub ręcznie. Aplikacja desktopowa w PyQt6.
 
+
+
+Ściągnięta transkrypcja:
+
+![image-20261012212411424](Zasoby/image-20261012212411424.png)
+
+
+
+Wykonane streszczenie:
+
+![image-20261012212723114](Zasoby/image-20261012212723114.png)
+
 ## Wymagania
 
 ### Narzędzia systemowe
